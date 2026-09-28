@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Reflection;
 
-namespace MemoryFlight;
+namespace Heapscape;
 
 public sealed class DumpJob(Guid id, string name, string directory)
 {
@@ -23,7 +23,7 @@ public sealed class DumpJobs(ILogger<DumpJobs> logger) : IHostedService
     public const long MaxUpload = 2L * 1024 * 1024 * 1024;
     private readonly ConcurrentDictionary<Guid, DumpJob> jobs = new();
     private readonly SemaphoreSlim admission = new(1, 1);
-    private readonly string root = Path.Combine(Path.GetTempPath(), "MemoryFlight", Guid.NewGuid().ToString("N"));
+    private readonly string root = Path.Combine(Path.GetTempPath(), "Heapscape", Guid.NewGuid().ToString("N"));
 
     public Task StartAsync(CancellationToken token)
     {

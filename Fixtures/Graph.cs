@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace MemoryFlight.Fixtures;
+namespace Heapscape.Fixtures;
 
 public sealed class DemoNode(string name)
 {
@@ -60,9 +60,9 @@ public sealed class FixtureGraph : IDisposable
     {
         var local = new DemoNode("stack-only-root");
         using var ready = new ManualResetEventSlim();
-        if (Environment.GetEnvironmentVariable("MEMORYFLIGHT_READY_FILE") is { } readyPath)
+        if (Environment.GetEnvironmentVariable("HEAPSCAPE_READY_FILE") is { } readyPath)
             File.WriteAllText(readyPath, "ready");
-        Console.WriteLine("MEMORYFLIGHT_READY");
+        Console.WriteLine("HEAPSCAPE_READY");
         ready.Wait();
         GC.KeepAlive(local);
         GC.KeepAlive(this);

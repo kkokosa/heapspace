@@ -1,7 +1,7 @@
 using System.Buffers.Binary;
 using Microsoft.Diagnostics.Runtime;
 
-namespace MemoryFlight;
+namespace Heapscape;
 
 public static class GcNativeCapture
 {

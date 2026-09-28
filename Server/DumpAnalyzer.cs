@@ -1,7 +1,7 @@
 using System.Globalization;
 using Microsoft.Diagnostics.Runtime;
 
-namespace MemoryFlight;
+namespace Heapscape;
 
 public sealed class DumpAnalyzer
 {

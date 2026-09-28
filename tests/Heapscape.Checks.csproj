@@ -6,5 +6,5 @@
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
-  <ItemGroup><ProjectReference Include="..\Server\MemoryFlight.csproj" /></ItemGroup>
+  <ItemGroup><ProjectReference Include="..\Server\Heapscape.csproj" /></ItemGroup>
 </Project>

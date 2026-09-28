@@ -1,6 +1,6 @@
 using System.Net;
 using System.Text.Json;
-using MemoryFlight;
+using Heapscape;
 
 if (args.Length > 0 && args[0] == "--analyze")
 {
@@ -21,7 +21,7 @@ if (args.Length > 0 && args[0] == "--analyze")
 }
 
 var builder = WebApplication.CreateBuilder(args);
-int port = builder.Configuration.GetValue("MemoryFlight:Port", 5077);
+int port = builder.Configuration.GetValue("Heapscape:Port", 5077);
 if (port is < 0 or > 65535) throw new ArgumentOutOfRangeException(nameof(port), "Port must be between 0 and 65535.");
 builder.WebHost.UseUrls($"http://127.0.0.1:{port}");
 builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = DumpJobs.MaxUpload);
@@ -46,12 +46,12 @@ app.Use(async (context, next) =>
     {
         string origin = context.Request.Headers.Origin.ToString();
         string ownOrigin = $"{context.Request.Scheme}://{context.Request.Host}";
-        if (context.Request.Headers["X-MemoryFlight"] != "1" ||
+        if (context.Request.Headers["X-Heapscape"] != "1" ||
             (origin.Length > 0 && !string.Equals(origin, ownOrigin, StringComparison.OrdinalIgnoreCase)) ||
             context.Request.Headers["Sec-Fetch-Site"] == "cross-site")
         {
             context.Response.StatusCode = 403;
-            await context.Response.WriteAsJsonAsync(new { error = "Same-origin MemoryFlight requests only." });
+            await context.Response.WriteAsJsonAsync(new { error = "Same-origin Heapscape requests only." });
             return;
         }
     }

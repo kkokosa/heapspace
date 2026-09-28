@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace MemoryFlight;
+namespace Heapscape;
 
 public static class Format
 {

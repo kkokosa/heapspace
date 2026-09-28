@@ -175,7 +175,7 @@ function load(snapshot, name) {
     'Stack roots have labeled stack-range frames. Weak links (muted/pink in Atlas) are weak handles or named-field annotations, not independent retaining roots. Dependent edges (orange in Atlas) retain a secondary only if their primary is live. The link legend follows the current theme. Stack traces are capped at 64 frames.',
     'Region labels keep readable screen-size limits but fade smoothly with absolute and relative distance. The selected region remains emphasized; overlapping labels are suppressed. Labels remain non-pickable and do not write depth. Shaded beads distinguish roots from array-reference slots.',
     'Ctrl-click targets a single rendered root or array-reference slot through container shells. A single-site selection highlights only its connection. X or clicking the same site clears it; right-drag is reserved for orbit-mode panning. Inspect target expands the ordinary object neighborhood.',
-    'No symbols are downloaded. Only analyze trusted dumps; this process isolation is not a security sandbox. Clear removes temporary dump and graph files; an abrupt process kill can leave files in the OS temp MemoryFlight folder.',
+    'No symbols are downloaded. Only analyze trusted dumps; this process isolation is not a security sandbox. Clear removes temporary dump and graph files; an abrupt process kill can leave files in the OS temp Heapscape folder.',
     'Root types are also shown on object hover for the selected collection generation. Root-provenance stripes compose with Prism material textures and array opacity instead of replacing those surfaces. Partial capture labels report observed categories, not an exhaustive root set.',
     'Collection scope is shown only under Highlight objects. Normal root provenance uses the full root graph; card scans use Gen 0 by default and report their scope. Card source candidates overlap dirty source memory, while young descendants follow captured dirty old-to-young slots. Per-table Scan toggles combine multiple tables without asserting exclusive retention or an exact live-GC scan trace.',
     'Unreachable analysis is unavailable for incomplete/unverified graphs; choosing it leaves the overview visible instead of suggesting a proven empty set. Unknown may include live and dead objects. Full GC changes collection scope, not capture completeness. On a complete verified graph, reachable and unreachable partition collectible objects; frozen/permanent objects remain outside collection. Increasing the rendering budget cannot recover omitted paths.',
@@ -572,7 +572,7 @@ function selectMatches() {
   status(`Selected all ${matches.length.toLocaleString()} matching captured objects.${raisedBudget ? ' Object budget raised to All captured so no matches are omitted.' : ''}`);
 }
 async function api(path, init = {}) {
-  const response = await fetch(path, { ...init, headers: { 'X-MemoryFlight': '1', ...init.headers } });
+  const response = await fetch(path, { ...init, headers: { 'X-Heapscape': '1', ...init.headers } });
   if (!response.ok) {
     const text = await response.text();
     let message = text;
@@ -673,7 +673,7 @@ async function upload(file) {
     const result = await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest(); request = xhr;
       xhr.open('POST', `/api/dumps?name=${encodeURIComponent(file.name)}&previews=${$('previews').checked}`);
-      xhr.setRequestHeader('X-MemoryFlight', '1'); xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+      xhr.setRequestHeader('X-Heapscape', '1'); xhr.setRequestHeader('Content-Type', 'application/octet-stream');
       xhr.upload.onprogress = e => { if (e.lengthComputable) $('progress').value = e.loaded / e.total * 100; };
       xhr.onload = () => {
         try {

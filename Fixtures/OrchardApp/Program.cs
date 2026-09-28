@@ -4,7 +4,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
 {
     ["OrchardCore:OrchardCore_AutoSetup:Tenants:0:ShellName"] = "Default",
-    ["OrchardCore:OrchardCore_AutoSetup:Tenants:0:SiteName"] = "MemoryFlight Orchard fixture",
+    ["OrchardCore:OrchardCore_AutoSetup:Tenants:0:SiteName"] = "Heapscape Orchard fixture",
     ["OrchardCore:OrchardCore_AutoSetup:Tenants:0:SiteTimeZone"] = "Etc/UTC",
     ["OrchardCore:OrchardCore_AutoSetup:Tenants:0:AdminUsername"] = "fixtureadmin",
     ["OrchardCore:OrchardCore_AutoSetup:Tenants:0:AdminEmail"] = "fixture@example.invalid",

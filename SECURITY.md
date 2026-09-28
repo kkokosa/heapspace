@@ -6,7 +6,7 @@ Heapscape is a local diagnostic viewer for **trusted dumps**. The server binds t
 
 ClrMD loads native DAC code. An analyzer worker provides crash containment, cancellation, and a timeout, **not a security sandbox**. Analyze only dumps and matching runtimes/DACs you trust. Cross-OS and cross-architecture analysis are not supported.
 
-Dumps, exported graphs, previews, logs, and screenshots can contain secrets or personal data. Disabling previews is not sanitization. Temporary uploads live under a per-server `MemoryFlight` directory in the OS temporary location. Removal and graceful shutdown delete those files; forced termination may leave them behind. Deletion is not secure erasure.
+Dumps, exported graphs, previews, logs, and screenshots can contain secrets or personal data. Disabling previews is not sanitization. Temporary uploads live under a per-server `Heapscape` directory in the OS temporary location. Removal and graceful shutdown delete those files; forced termination may leave them behind. Deletion is not secure erasure.
 
 The viewer does not upload data to cloud services or download symbols. Dependency installation contacts package registries. Keep the operating system, browser, runtimes, and dependencies maintained.
 

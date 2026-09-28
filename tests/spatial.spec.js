@@ -113,8 +113,8 @@ test('size-aware console atlas: object hover, deselection, region jump, reserved
   await expect(page.locator('#reserved')).not.toBeChecked();
   await expect(page.locator('#counts')).toContainText('streams');
   await page.screenshot({ path: 'artifacts/address-overview.png' });
-  await page.locator('#search').fill('MemoryFlight.Fixtures.DemoNode');
-  const result = page.locator('#results button').filter({ hasText: /^MemoryFlight\.Fixtures\.DemoNode\s*0x/ }).first();
+  await page.locator('#search').fill('Heapscape.Fixtures.DemoNode');
+  const result = page.locator('#results button').filter({ hasText: /^Heapscape\.Fixtures\.DemoNode\s*0x/ }).first();
   await result.click();
   await expect(page.locator('#details')).toContainText('Reachable by');
   await expect(page.locator('#object-budget-status')).toContainText('context objects');
@@ -130,7 +130,7 @@ test('size-aware console atlas: object hover, deselection, region jump, reserved
   await page.getByRole('button', { name: 'Focus object [G]', exact: true }).click();
   await page.screenshot({ path: 'artifacts/object-isolated.png' });
   await page.mouse.move(800, 500);
-  await expect(page.locator('#tooltip')).toContainText('MemoryFlight.Fixtures.DemoNode');
+  await expect(page.locator('#tooltip')).toContainText('Heapscape.Fixtures.DemoNode');
   await page.screenshot({ path: 'artifacts/object-pipes.png' });
   await page.keyboard.press('Escape');
   await expect(page.locator('#details')).toContainText('Nothing selected.');
@@ -151,7 +151,7 @@ test('size-aware console atlas: object hover, deselection, region jump, reserved
   await expect(page.locator('#details')).toContainText('Nothing selected.');
   await page.locator('#reserved').check();
   await page.locator('#reserved').uncheck();
-  await page.locator('#search').fill('MemoryFlight.Fixtures.DemoNode');
+  await page.locator('#search').fill('Heapscape.Fixtures.DemoNode');
   await result.click();
   await page.locator('#fly').click();
   await expect(page.locator('#crosshair')).toBeVisible();
@@ -181,12 +181,12 @@ test('flight hover follows motion, X clears selection, and right-click preserves
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await openSnapshot(page, 'console');
-  await page.locator('#search').fill('MemoryFlight.Fixtures.DemoNode');
-  await page.locator('#results button').filter({ hasText: /^MemoryFlight\.Fixtures\.DemoNode\s*0x/ }).first().click();
+  await page.locator('#search').fill('Heapscape.Fixtures.DemoNode');
+  await page.locator('#results button').filter({ hasText: /^Heapscape\.Fixtures\.DemoNode\s*0x/ }).first().click();
   await page.locator('#fly').click();
   await expect(page.locator('#crosshair')).toBeVisible();
   // No mouse movement is needed to obtain the crosshair's target.
-  await expect(page.locator('#tooltip')).toContainText('MemoryFlight.Fixtures.DemoNode');
+  await expect(page.locator('#tooltip')).toContainText('Heapscape.Fixtures.DemoNode');
   await expect(page.locator('#flight-hint')).toContainText('X clears');
   await page.keyboard.press('KeyX');
   await expect(page.locator('#details')).toContainText('Nothing selected.');
@@ -220,8 +220,8 @@ test('Matrix and Neon themes keep bundled object links and always animate signal
   page.on('pageerror', error => errors.push(error.message));
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await openSnapshot(page, 'console');
-  await page.locator('#search').fill('MemoryFlight.Fixtures.DemoNode');
-  await page.locator('#results button').filter({ hasText: /^MemoryFlight\.Fixtures\.DemoNode\s*0x/ }).first().click();
+  await page.locator('#search').fill('Heapscape.Fixtures.DemoNode');
+  await page.locator('#results button').filter({ hasText: /^Heapscape\.Fixtures\.DemoNode\s*0x/ }).first().click();
   await expect(page.locator('#roots, #link-mode')).toHaveCount(0);
   await expect(page.locator('#reference-status')).toHaveText(/^[1-9][\d,]* \/ [\d,]+ captured object references .* drawn/);
   const coverage = await page.locator('#reference-status').textContent();
@@ -319,8 +319,8 @@ test('coverage percentages update for budgets and selection while roots and fain
   await page.locator('#budget').selectOption('5000');
   await expect(page.locator('#object-budget-status')).not.toContainText('(100.0%)');
   await expect(page.locator('#budget option[value="5000"]')).toHaveText(/5,000 \(up to \d+\.\d% of walked\)/);
-  await page.locator('#search').fill('MemoryFlight.Fixtures.DemoNode');
-  await page.locator('#results button').filter({ hasText: /^MemoryFlight\.Fixtures\.DemoNode\s*0x/ }).first().click();
+  await page.locator('#search').fill('Heapscape.Fixtures.DemoNode');
+  await page.locator('#results button').filter({ hasText: /^Heapscape\.Fixtures\.DemoNode\s*0x/ }).first().click();
   await expect(page.locator('#object-budget-status')).toContainText('faint context objects');
   await expect(page.locator('#reference-status')).toContainText('Selection/depth further restricts the scope');
   await expect(page.locator('#edges')).toHaveCount(0);
@@ -471,8 +471,8 @@ test('Space toggles slow flight, Shift temporarily overrides it, and F preserves
   const coverage = await page.locator('#reference-status').textContent();
   await expect(page.locator('#connection-width')).toHaveCount(0);
   await expect(page.locator('#reference-status')).toHaveText(coverage);
-  await page.locator('#search').fill('MemoryFlight.Fixtures.DemoNode');
-  await page.locator('#results button').filter({ hasText: /^MemoryFlight\.Fixtures\.DemoNode\s*0x/ }).first().click();
+  await page.locator('#search').fill('Heapscape.Fixtures.DemoNode');
+  await page.locator('#results button').filter({ hasText: /^Heapscape\.Fixtures\.DemoNode\s*0x/ }).first().click();
   await page.keyboard.press('KeyF');
   await expect(page.locator('#crosshair')).toBeVisible();
   await page.keyboard.press('KeyG');
@@ -500,7 +500,7 @@ test('Space toggles slow flight, Shift temporarily overrides it, and F preserves
   await page.keyboard.up('KeyW');
   await page.keyboard.press('KeyF');
   await expect(page.locator('#crosshair')).toBeHidden();
-  await expect(page.locator('#details h3').first()).toHaveText('MemoryFlight.Fixtures.DemoNode');
+  await expect(page.locator('#details h3').first()).toHaveText('Heapscape.Fixtures.DemoNode');
   await page.keyboard.press('KeyF');
   await expect(page.locator('#crosshair')).toBeVisible();
   await expect(page.locator('#flight-hint')).toHaveAttribute('data-speed', 'slow');
@@ -544,11 +544,11 @@ test('F enters flight directly from panel controls without clearing GC highlight
   await page.keyboard.press('f');
   await expect(page.locator('#search')).toHaveValue('f');
   await expect(page.locator('#crosshair')).toBeHidden();
-  await page.locator('#search').fill('MemoryFlight.Fixtures.DemoNode');
-  await page.locator('#results button').filter({ hasText: /^MemoryFlight\.Fixtures\.DemoNode\s*0x/ }).first().click();
+  await page.locator('#search').fill('Heapscape.Fixtures.DemoNode');
+  await page.locator('#results button').filter({ hasText: /^Heapscape\.Fixtures\.DemoNode\s*0x/ }).first().click();
   await page.locator('#budget').focus();
   await flyFrom(page.locator('#budget'));
-  await expect(page.locator('#details h3').first()).toHaveText('MemoryFlight.Fixtures.DemoNode');
+  await expect(page.locator('#details h3').first()).toHaveText('Heapscape.Fixtures.DemoNode');
   expect(errors).toEqual([]);
 });
 
@@ -589,8 +589,8 @@ test('simplified controls use a dump dialog, fixed defaults, folded search and a
   const legend = await page.locator('#legend-panel').boundingBox(), inspector = await page.locator('#inspector').boundingBox();
   expect(legend.y).toBeGreaterThanOrEqual(inspector.y + inspector.height);
   await page.locator('#find-toggle').click();
-  await page.locator('#search').fill('MemoryFlight.Fixtures.DemoNode');
-  await page.locator('#results button').filter({ hasText: /^MemoryFlight\.Fixtures\.DemoNode\s*0x/ }).first().click();
+  await page.locator('#search').fill('Heapscape.Fixtures.DemoNode');
+  await page.locator('#results button').filter({ hasText: /^Heapscape\.Fixtures\.DemoNode\s*0x/ }).first().click();
   const selected = await page.locator('#details').textContent();
   await page.locator('#open-dump').click();
   await page.locator('#previews').check();
@@ -612,7 +612,7 @@ test('compact object inspection pairs essential facts and keeps highlight scope 
   page.on('pageerror', error => errors.push(error.message));
   const snapshot = JSON.parse(readFileSync(path.resolve('artifacts', 'console.json'), 'utf8'));
   const analysis = analyzeReachability(snapshot, indexGraph(snapshot));
-  const live = snapshot.objects.find(object => object.type === 'MemoryFlight.Fixtures.DemoNode' && analysis.objects.get(object.id).rootMasks[2]);
+  const live = snapshot.objects.find(object => object.type === 'Heapscape.Fixtures.DemoNode' && analysis.objects.get(object.id).rootMasks[2]);
   const dead = snapshot.objects.find(object => analysis.objects.get(object.id).state === 'unreachable');
   await openSnapshot(page, 'console');
   await expect(page.locator('#edges, #isolate, #cards, #inspector > h2')).toHaveCount(0);
@@ -746,11 +746,11 @@ test('Prism omits preview and texture diagnostics when string contents were not 
 
 test('right-drag pans the scene without clearing the selected object', async ({ page }) => {
   await openSnapshot(page, 'console');
-  await page.locator('#search').fill('MemoryFlight.Fixtures.DemoNode');
-  await page.locator('#results button').filter({ hasText: /^MemoryFlight\.Fixtures\.DemoNode\s*0x/ }).first().click();
+  await page.locator('#search').fill('Heapscape.Fixtures.DemoNode');
+  await page.locator('#results button').filter({ hasText: /^Heapscape\.Fixtures\.DemoNode\s*0x/ }).first().click();
   const details = await page.locator('#details').textContent();
   await page.mouse.move(800, 500);
-  await expect(page.locator('#tooltip')).toContainText('MemoryFlight.Fixtures.DemoNode');
+  await expect(page.locator('#tooltip')).toContainText('Heapscape.Fixtures.DemoNode');
   const before = await page.locator('#tooltip').textContent();
   await page.mouse.down({ button: 'right' });
   await page.mouse.move(1000, 620, { steps: 10 });
@@ -759,7 +759,7 @@ test('right-drag pans the scene without clearing the selected object', async ({ 
   await page.waitForTimeout(150);
   await page.mouse.move(800, 500);
   await expect.poll(async () => await page.locator('#tooltip').isHidden() ? '<empty>' : await page.locator('#tooltip').textContent()).not.toBe(before);
-  await expect(page.locator('#details h3').first()).toHaveText('MemoryFlight.Fixtures.DemoNode');
+  await expect(page.locator('#details h3').first()).toHaveText('Heapscape.Fixtures.DemoNode');
 });
 
 test('Find object(s) is independent, foldable, and selects all matches beyond the list preview', async ({ page }) => {
@@ -767,7 +767,7 @@ test('Find object(s) is independent, foldable, and selects all matches beyond th
   page.on('pageerror', error => errors.push(error.message));
   const snapshot = JSON.parse(readFileSync(path.resolve('artifacts', 'console.json'), 'utf8'));
   const expected = snapshot.objects.filter(object =>
-    [object.type, object.address, object.preview ?? ''].some(value => value.toLowerCase().includes('memoryflight.fixtures.demonode'))).length;
+    [object.type, object.address, object.preview ?? ''].some(value => value.toLowerCase().includes('heapscape.fixtures.demonode'))).length;
   expect(expected).toBeGreaterThan(40);
   await openSnapshot(page, 'console');
   await expect(page.locator('#coverage')).toHaveCount(0);
@@ -779,7 +779,7 @@ test('Find object(s) is independent, foldable, and selects all matches beyond th
   await page.locator('#find-toggle').click();
   await expect(page.locator('#find-body')).toBeHidden();
   await page.locator('#find-toggle').click();
-  await page.locator('#search').fill('MemoryFlight.Fixtures.DemoNode');
+  await page.locator('#search').fill('Heapscape.Fixtures.DemoNode');
   await expect(page.locator('#results button')).toHaveCount(40);
   await expect(page.locator('#select-matches')).toHaveText(`Select all ${expected.toLocaleString()} results`);
   await page.locator('#select-matches').click();
@@ -1079,7 +1079,7 @@ test('inspector depths are directional and all retaining routes are queried on d
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   const snapshot = JSON.parse(readFileSync(path.resolve('artifacts', 'console.json'), 'utf8')), index = indexGraph(snapshot);
-  const object = snapshot.objects.find(object => object.type === 'MemoryFlight.Fixtures.DemoNode');
+  const object = snapshot.objects.find(object => object.type === 'Heapscape.Fixtures.DemoNode');
   await openSnapshot(page, 'console');
   await expect(page.locator('#controls #depth, #controls #incoming-depth, #controls #outgoing-depth, #floor-labels, #gaps')).toHaveCount(0);
   await page.locator('#search').fill(object.address); await page.locator('#results button').first().click();
@@ -1111,12 +1111,12 @@ test('inspector depths are directional and all retaining routes are queried on d
 test('WASD pans and QE rotates without changing selection or consuming search input', async ({ page }) => {
   test.setTimeout(90000);
   await openSnapshot(page, 'console');
-  await page.locator('#search').fill('MemoryFlight.Fixtures.DemoNode');
-  await page.locator('#results button').filter({ hasText: /^MemoryFlight\.Fixtures\.DemoNode\s*0x/ }).first().click();
+  await page.locator('#search').fill('Heapscape.Fixtures.DemoNode');
+  await page.locator('#results button').filter({ hasText: /^Heapscape\.Fixtures\.DemoNode\s*0x/ }).first().click();
   const details = await page.locator('#details').textContent();
   await page.locator('#viewport canvas').focus();
   await page.mouse.move(800, 500);
-  await expect(page.locator('#tooltip')).toContainText('MemoryFlight.Fixtures.DemoNode');
+  await expect(page.locator('#tooltip')).toContainText('Heapscape.Fixtures.DemoNode');
   const original = await page.locator('#tooltip').textContent();
   await page.keyboard.down('KeyD');
   try {
@@ -1225,8 +1225,8 @@ test('highlight uses selection-style dimming and hover exposes the same root typ
   const data = JSON.parse(readFileSync(path.resolve('artifacts', 'console.json'), 'utf8'));
   const analysis = analyzeReachability(data, indexGraph(data));
   await openSnapshot(page, 'console');
-  await page.locator('#search').fill('MemoryFlight.Fixtures.DemoNode');
-  const object = page.locator('#results button').filter({ hasText: /^MemoryFlight\.Fixtures\.DemoNode\s*0x/ }).first();
+  await page.locator('#search').fill('Heapscape.Fixtures.DemoNode');
+  const object = page.locator('#results button').filter({ hasText: /^Heapscape\.Fixtures\.DemoNode\s*0x/ }).first();
   await object.click();
   await page.mouse.move(800, 500);
   await expect(page.locator('#tooltip .tooltip-root-types')).toContainText('Root types (Gen 2):');

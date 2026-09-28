@@ -47,7 +47,7 @@ export function applyTubeWidth(material, width) {
       .replace('#include <common>', '#include <common>\nattribute vec3 tubeCenter;\nuniform float referenceWidth;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\ntransformed = tubeCenter + (transformed - tubeCenter) * referenceWidth;');
   };
-  material.customProgramCacheKey = () => 'memoryflight-tube-width';
+  material.customProgramCacheKey = () => 'heapscape-tube-width';
   return material;
 }
 
@@ -73,7 +73,7 @@ export function applyArrayAlpha(material) {
       .replace('#include <common>', '#include <common>\nflat varying float vArrayAlpha;')
       .replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.a *= vArrayAlpha;');
   };
-  material.customProgramCacheKey = () => `memoryflight-array-alpha-flat:${material.type}`;
+  material.customProgramCacheKey = () => `heapscape-array-alpha-flat:${material.type}`;
   return material;
 }
 

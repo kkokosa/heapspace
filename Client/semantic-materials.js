@@ -103,7 +103,7 @@ totalEmissiveRadiance += (diffuseColor.rgb * (semanticPattern * 1.45 + semanticB
   semanticInnerRim * 0.5 + semanticCorner * 0.8) + vec3(0.1) * semanticBorder) * diffuseColor.a;
 roughnessFactor = mix(roughnessFactor, 0.24, max(semanticPattern, semanticBorder));`);
   };
-  material.customProgramCacheKey = () => `${previousKey}:memoryflight-semantic-v2`;
+  material.customProgramCacheKey = () => `${previousKey}:heapscape-semantic-v2`;
   material.userData.semanticSurface = true;
   return material;
 }

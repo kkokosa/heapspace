@@ -4,7 +4,7 @@ import path from 'node:path';
 test('standalone Heapscape shell loads without a dump', async ({ page, request }) => {
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
-  const health = await request.get('/api/health', { headers: { 'X-MemoryFlight': '1' } });
+  const health = await request.get('/api/health', { headers: { 'X-Heapscape': '1' } });
   expect(health.status()).toBe(200);
   expect(await health.json()).toMatchObject({ status: 'ready' });
   await page.goto('/');
@@ -37,10 +37,10 @@ test('upload real dump, inspect graph and navigate without browser errors', asyn
   await expect(page.locator('#status')).toContainText('Loaded console.dmp', { timeout: 150000 });
   await expect(page.locator('#counts')).toContainText('captured objects');
   await page.locator('#find-toggle').click();
-  await page.locator('#search').fill('MemoryFlight.Fixtures.DemoNode');
+  await page.locator('#search').fill('Heapscape.Fixtures.DemoNode');
   await expect(page.locator('#results button').first()).toBeVisible();
-  await page.locator('#results button').filter({ hasText: /^MemoryFlight\.Fixtures\.DemoNode\s*0x/ }).first().click();
-  await expect(page.locator('#details h3').first()).toHaveText('MemoryFlight.Fixtures.DemoNode');
+  await page.locator('#results button').filter({ hasText: /^Heapscape\.Fixtures\.DemoNode\s*0x/ }).first().click();
+  await expect(page.locator('#details h3').first()).toHaveText('Heapscape.Fixtures.DemoNode');
   await expect(page.locator('#details')).toContainText('Outgoing');
   await page.getByRole('button', { name: 'Find one retaining path' }).click();
   await expect(page.locator('#details')).toContainText('Path from');
@@ -60,7 +60,7 @@ test('upload real dump, inspect graph and navigate without browser errors', asyn
   await expect(page.locator('#status')).toContainText('removed from server storage');
   expect(errors).toEqual([]);
   } finally {
-    await request.delete(`/api/dumps/${id}`, { headers: { 'X-MemoryFlight': '1' } });
+    await request.delete(`/api/dumps/${id}`, { headers: { 'X-Heapscape': '1' } });
   }
 });
 
@@ -89,27 +89,27 @@ for (const name of ['aspnet', 'orchard']) {
       await page.locator('#saved .saved-job').filter({ has: page.locator(`button[data-job-id="${id}"]`) }).getByRole('button', { name: `Remove ${name}.dmp`, exact: true }).click();
       await expect(page.locator('#status')).toContainText('removed from server storage');
     } finally {
-      await request.delete(`/api/dumps/${id}`, { headers: { 'X-MemoryFlight': '1' } });
+      await request.delete(`/api/dumps/${id}`, { headers: { 'X-Heapscape': '1' } });
     }
   });
 }
 
 test('API rejects cross-origin access and malformed dumps explicitly', async ({ request }) => {
   expect((await request.get('/api/health')).status()).toBe(403);
-  expect((await request.get('/api/health', { headers: { 'X-MemoryFlight': '1', Origin: 'https://example.org' } })).status()).toBe(403);
+  expect((await request.get('/api/health', { headers: { 'X-Heapscape': '1', Origin: 'https://example.org' } })).status()).toBe(403);
   const response = await request.post('/api/dumps?name=invalid.dmp', {
-    headers: { 'X-MemoryFlight': '1', 'Content-Type': 'application/octet-stream' },
+    headers: { 'X-Heapscape': '1', 'Content-Type': 'application/octet-stream' },
     data: Buffer.alloc(64),
   });
   expect(response.status()).toBe(202);
   const { id } = await response.json();
   try {
     await expect.poll(async () => {
-      return (await (await request.get(`/api/dumps/${id}`, { headers: { 'X-MemoryFlight': '1' } })).json()).state;
+      return (await (await request.get(`/api/dumps/${id}`, { headers: { 'X-Heapscape': '1' } })).json()).state;
     }, { timeout: 30000 }).toBe('failed');
-    expect((await request.get(`/api/dumps/${id}/graph`, { headers: { 'X-MemoryFlight': '1' } })).status()).toBe(409);
+    expect((await request.get(`/api/dumps/${id}/graph`, { headers: { 'X-Heapscape': '1' } })).status()).toBe(409);
   } finally {
-    expect((await request.delete(`/api/dumps/${id}`, { headers: { 'X-MemoryFlight': '1' } })).status()).toBe(204);
+    expect((await request.delete(`/api/dumps/${id}`, { headers: { 'X-Heapscape': '1' } })).status()).toBe(204);
   }
 });
 
@@ -132,9 +132,9 @@ test('uploading another dump preserves already processed dumps in the dialog', a
     await page.locator('#open-dump').click();
     for (const id of ids) {
       await expect(page.locator(`#saved button[data-job-id="${id}"]`)).toBeVisible();
-      expect((await request.get(`/api/dumps/${id}`, { headers: { 'X-MemoryFlight': '1' } })).status()).toBe(200);
+      expect((await request.get(`/api/dumps/${id}`, { headers: { 'X-Heapscape': '1' } })).status()).toBe(200);
     }
   } finally {
-    for (const id of ids) await request.delete(`/api/dumps/${id}`, { headers: { 'X-MemoryFlight': '1' } });
+    for (const id of ids) await request.delete(`/api/dumps/${id}`, { headers: { 'X-Heapscape': '1' } });
   }
 });

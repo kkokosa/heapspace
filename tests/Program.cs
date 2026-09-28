@@ -1,5 +1,5 @@
 using System.Text.Json;
-using MemoryFlight;
+using Heapscape;
 using Microsoft.Diagnostics.Runtime;
 using System.Buffers.Binary;
 
@@ -10,7 +10,7 @@ void Check(bool condition, string message)
     if (!condition) throw new InvalidOperationException(message);
     checks++;
 }
-string temp = Path.Combine(Path.GetTempPath(), $"memoryflight-check-{Guid.NewGuid():N}.dmp");
+string temp = Path.Combine(Path.GetTempPath(), $"heapscape-check-{Guid.NewGuid():N}.dmp");
 try
 {
     using (var writer = new BinaryWriter(File.Create(temp)))
@@ -208,7 +208,7 @@ foreach (string file in args)
     }
     if (Path.GetFileName(file).StartsWith("console", StringComparison.OrdinalIgnoreCase))
     {
-        Check(data.Objects.Count(o => o.Type == "MemoryFlight.Fixtures.DemoNode") >= 670, "Console fixture node population");
+        Check(data.Objects.Count(o => o.Type == "Heapscape.Fixtures.DemoNode") >= 670, "Console fixture node population");
         Check(data.Objects.Any(o => o.Generation == "Large"), "LOH recovered");
         Check(data.Objects.Any(o => o.Generation == "Pinned"), "POH recovered");
         Check(data.Objects.Any(o => o.Generation == "Generation0"), "Gen0 recovered");

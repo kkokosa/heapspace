@@ -39,8 +39,8 @@ jobs:
       - name: Build frontend
         run: npm run build
       - name: Restore .NET checks and locked backend dependencies
-        run: dotnet restore tests\MemoryFlight.Checks.csproj --locked-mode
+        run: dotnet restore tests\Heapscape.Checks.csproj --locked-mode
       - name: Build backend
-        run: dotnet build Server\MemoryFlight.csproj -c Release --no-restore
+        run: dotnet build Server\Heapscape.csproj -c Release --no-restore
       - name: Run synthetic .NET checks
-        run: dotnet run --project tests\MemoryFlight.Checks.csproj -c Release --no-restore
+        run: dotnet run --project tests\Heapscape.Checks.csproj -c Release --no-restore

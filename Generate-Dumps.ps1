@@ -34,7 +34,7 @@ function Start-Fixture([string]$Name, [string]$Dll, [string[]]$Arguments = @(), 
     $start.Environment['DOTNET_EnableDiagnostics'] = '1'
     $start.Environment['ASPNETCORE_ENVIRONMENT'] = 'Development'
     $readyPath = Join-Path $OutputDirectory "$Name.$([Guid]::NewGuid().ToString('N')).ready"
-    $start.Environment['MEMORYFLIGHT_READY_FILE'] = $readyPath
+    $start.Environment['HEAPSCAPE_READY_FILE'] = $readyPath
     $start.RedirectStandardOutput = $true
     $start.RedirectStandardError = $true
     $process = [Diagnostics.Process]::Start($start)
@@ -96,7 +96,7 @@ try {
         $url = "http://127.0.0.1:$($web.Port)"
         $child = Start-Fixture $web.Name $dll @('--urls', $url) (Join-Path $PSScriptRoot "Fixtures\$($web.Project)")
         $content = Wait-Http "$url$($web.Path)" $child
-        if ($web.Scenario -eq 'Orchard' -and ($content -match 'name="AdminPassword"' -or $content -notmatch 'MemoryFlight Orchard fixture')) {
+        if ($web.Scenario -eq 'Orchard' -and ($content -match 'name="AdminPassword"' -or $content -notmatch 'Heapscape Orchard fixture')) {
             throw 'Orchard did not finish setup; refusing to call a setup-page dump a CMS load test.'
         }
         $resultPath = Join-Path $OutputDirectory "$($web.Name)-load.json"

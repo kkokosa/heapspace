@@ -10,9 +10,9 @@ Run from the repository root:
 npm ci
 npm test
 npm run build
-dotnet restore tests\MemoryFlight.Checks.csproj --locked-mode
-dotnet build Server\MemoryFlight.csproj -c Release --no-restore
-dotnet run --project tests\MemoryFlight.Checks.csproj -c Release --no-restore
+dotnet restore tests\Heapscape.Checks.csproj --locked-mode
+dotnet build Server\Heapscape.csproj -c Release --no-restore
+dotnet run --project tests\Heapscape.Checks.csproj -c Release --no-restore
 pwsh -File .\Start.ps1 -Port 5087
 ```
 
@@ -28,7 +28,7 @@ See the [technical reference](docs/reference.md) for local fixture generation an
 
 ## Changes and reports
 
-Keep changes focused, preserve exact addresses and uncertainty/coverage semantics, and add regression tests for behavior changes. Retain internal `MemoryFlight` identifiers unless a change explicitly covers their consumers. Update relevant documentation and lockfiles; explain dependency upgrades rather than silently changing locked versions.
+Keep changes focused, preserve exact addresses and uncertainty/coverage semantics, and add regression tests for behavior changes. Update relevant documentation and lockfiles; explain dependency upgrades rather than silently changing locked versions.
 
 For bugs, include the commit, tool/runtime versions, reproduction steps, expected behavior, and a minimal synthetic reproducer. Review logs and screenshots before sharing.
 

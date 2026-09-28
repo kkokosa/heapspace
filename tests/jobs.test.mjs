@@ -19,12 +19,12 @@ async function until(probe, timeout = 30000) {
 }
 
 test('completed dumps do not block new uploads, while overlapping uploads are still rejected', { timeout: 180000 }, async () => {
-  const dll = path.resolve(process.env.MEMORYFLIGHT_SERVER_DLL ?? path.join('Server', 'bin', 'Release', 'net10.0', 'MemoryFlight.dll'));
+  const dll = path.resolve(process.env.HEAPSCAPE_SERVER_DLL ?? path.join('Server', 'bin', 'Release', 'net10.0', 'Heapscape.dll'));
   const fixture = path.resolve('artifacts', 'dumps', 'console.dmp');
-  assert.ok(existsSync(dll), 'Build the Release server first, or set MEMORYFLIGHT_SERVER_DLL.');
+  assert.ok(existsSync(dll), 'Build the Release server first, or set HEAPSCAPE_SERVER_DLL.');
   assert.ok(existsSync(fixture), 'Generate the console dump fixture first.');
-  const temporary = await mkdtemp(path.join(tmpdir(), 'memoryflight-upload-test-'));
-  const server = spawn('dotnet', [dll, '--MemoryFlight:Port=0'], {
+  const temporary = await mkdtemp(path.join(tmpdir(), 'heapscape-upload-test-'));
+  const server = spawn('dotnet', [dll, '--Heapscape:Port=0'], {
     cwd: path.resolve('Server'),
     env: { ...process.env, TMP: temporary, TEMP: temporary },
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -33,7 +33,7 @@ test('completed dumps do not block new uploads, while overlapping uploads are st
   server.stdout.on('data', chunk => { output += chunk; });
   server.stderr.on('data', chunk => { output += chunk; });
   const exited = new Promise(resolve => server.once('exit', resolve));
-  const headers = { 'X-MemoryFlight': '1' };
+  const headers = { 'X-Heapscape': '1' };
   const uploadHeaders = { ...headers, 'Content-Type': 'application/octet-stream' };
   let blockedBody, controller, blockedUpload;
   try {

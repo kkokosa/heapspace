@@ -1,9 +1,9 @@
-using MemoryFlight.Fixtures;
+using Heapscape.Fixtures;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<FixtureGraph>();
 var app = builder.Build();
-app.MapGet("/", () => "MemoryFlight ASP.NET fixture");
+app.MapGet("/", () => "Heapscape ASP.NET fixture");
 app.MapGet("/work", async (FixtureGraph graph) =>
 {
     var request = FixtureGraph.Create("request", 16);

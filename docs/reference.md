@@ -4,7 +4,7 @@
 
 All commands below run from the repository root, not the `docs` directory.
 
-- **Heapscape** is a local, browser-based .NET dump explorer using Three.js and Microsoft ClrMD. The C# project, namespaces, API header, configuration key, fixture types, and temporary directory retain the internal name `MemoryFlight`.
+- **Heapscape** is a local, browser-based .NET dump explorer using Three.js and Microsoft ClrMD.
 - run on Windows x64 with PowerShell 7, the .NET 10 SDK, Node.js 22.12+ (or a newer supported Node release), and a WebGL2-capable browser:
   ```powershell
   git clone https://github.com/kkokosa/heapspace.git
@@ -12,7 +12,7 @@ All commands below run from the repository root, not the `docs` directory.
   pwsh -File .\Start.ps1
   ```
   - open http://127.0.0.1:5077; the server deliberately binds to loopback, not the network.
-  - use `pwsh -File .\Start.ps1 -Port 5087` for an alternate loopback port, or `-Port 0` for an OS-assigned port printed at startup. Direct DLL launches accept `--MemoryFlight:Port=5087`; start the DLL with `Server` as the working directory so static assets resolve correctly.
+  - use `pwsh -File .\Start.ps1 -Port 5087` for an alternate loopback port, or `-Port 0` for an OS-assigned port printed at startup. Direct DLL launches accept `--Heapscape:Port=5087`; start the DLL with `Server` as the working directory so static assets resolve correctly.
   - `Start.ps1` checks JavaScript dependencies and restores the locked versions when missing or mismatched, then builds the frontend and starts ASP.NET. Stop with Ctrl+C.
   - both PowerShell launchers use the normal configured NuGet sources (normally the official v3 feed). Override explicitly with `-NuGetSource https://api.nuget.org/v3/index.json`, or use `-NuGetSource https://www.nuget.org/api/v2/` if v3 is unavailable. Restore failures are reported; neither launcher silently falls back, disables TLS checks, or changes machine-wide settings.
   - frontend assets are bundled locally. No CDN, cloud upload, telemetry, or symbol-server requests are used by the viewer.
@@ -131,7 +131,7 @@ All commands below run from the repository root, not the `docs` directory.
   - native views show Windows MemoryInfoList mappings, captured-range fallbacks, or little-endian ELF64 PT_LOAD segments. Overlap labels are not exclusive ownership. They are not malloc block boundaries; arbitrary native pointers and native-only thread roots are not guessed.
   - matching local runtime/DAC, OS, and analyzer architecture are required. Windows x64 is exercised by the fixtures. Cross-OS/cross-architecture analysis is not supported or verified; Linux ELF mapping parsing is present but not end-to-end validated here.
   - previews are opt-in and limited to strings (160 characters) and array lengths. Arbitrary object methods are never invoked; arbitrary nested value inspection is not implemented.
-  - dumps and graphs live under the OS temp `MemoryFlight` directory. Clear deletes their files; graceful shutdown cleans the session directory. Forced termination can leave files for manual removal. Deletion is not secure erasure.
+  - dumps and graphs live under the OS temp `Heapscape` directory. Clear deletes their files; graceful shutdown cleans the session directory. Forced termination can leave files for manual removal. Deletion is not secure erasure.
 - reproduce the test dumps:
   ```powershell
   # Install only if dotnet-dump is not already available.
@@ -151,38 +151,38 @@ All commands below run from the repository root, not the `docs` directory.
   npm ci
   npm test
   npm run build
-  dotnet build Server\MemoryFlight.csproj -c Release
+  dotnet build Server\Heapscape.csproj -c Release
   # Synthetic inputs only; no generated fixture required:
-  dotnet run --project tests\MemoryFlight.Checks.csproj -c Release
+  dotnet run --project tests\Heapscape.Checks.csproj -c Release
   # Fixture-free WebGL pixel check; starts its own ephemeral HTTP server:
   npm run test:browser -- spatial.spec.js --grep "transparent boxes"
   # After console fixture generation (starts its own isolated backend):
   npm run test:jobs
   # With all three dumps generated, export graphs for spatial/browser checks:
   foreach ($name in 'console', 'aspnet', 'orchard') {
-      dotnet Server\bin\Release\net10.0\MemoryFlight.dll --analyze "artifacts\dumps\$name.dmp" "artifacts\$name.json" true
+      dotnet Server\bin\Release\net10.0\Heapscape.dll --analyze "artifacts\dumps\$name.dmp" "artifacts\$name.json" true
       if ($LASTEXITCODE -ne 0) { throw "Analysis failed: $name" }
   }
   # Spatial tests use their own ephemeral server and the generated JSON:
   npm run test:browser -- spatial.spec.js
   # In a separate terminal, run: pwsh -File .\Start.ps1 -Port 5087
   # Viewer tests upload/remove test jobs; target only a disposable instance:
-  $env:MEMORYFLIGHT_BASE_URL = 'http://127.0.0.1:5087'
+  $env:HEAPSCAPE_BASE_URL = 'http://127.0.0.1:5087'
   npm run test:browser -- viewer.spec.js
   # Verify complete capture and rendering past the former object/JSON limits:
-  dotnet Server\bin\Release\net10.0\MemoryFlight.dll --analyze artifacts\dumps\orchard.dmp artifacts\orchard-full.json false
+  dotnet Server\bin\Release\net10.0\Heapscape.dll --analyze artifacts\dumps\orchard.dmp artifacts\orchard-full.json false
   node tests\complete-capture.mjs artifacts\orchard-full.json
   npm run test:browser -- spatial.spec.js --grep "complete Orchard capture"
   # Standalone dump analysis, without the web server:
-  dotnet Server\bin\Release\net10.0\MemoryFlight.dll --analyze artifacts\dumps\console.dmp artifacts\console.json true
-  dotnet run --project tests\MemoryFlight.Checks.csproj -c Release -- artifacts\console.json
+  dotnet Server\bin\Release\net10.0\Heapscape.dll --analyze artifacts\dumps\console.dmp artifacts\console.json true
+  dotnet run --project tests\Heapscape.Checks.csproj -c Release -- artifacts\console.json
   # Verify array-slot addresses against actual pointer values in a dump:
-  dotnet run --project tests\MemoryFlight.Checks.csproj -c Release -- artifacts\dumps\console.dmp
+  dotnet run --project tests\Heapscape.Checks.csproj -c Release -- artifacts\dumps\console.dmp
   # Verify exported free ranges against the source dump as well:
-  dotnet run --project tests\MemoryFlight.Checks.csproj -c Release -- artifacts\console.json artifacts\dumps\console.dmp
+  dotnet run --project tests\Heapscape.Checks.csproj -c Release -- artifacts\console.json artifacts\dumps\console.dmp
   ```
   - dumps and exported fixture JSON are not distributed. Generate them before running the fixture-dependent suites; most spatial tests need `artifacts\console.json`, `artifacts\aspnet.json`, and `artifacts\orchard.json`, while the complete-capture check additionally needs `artifacts\orchard-full.json`. Fixture graph assumptions can depend on the local runtime and generated workload.
-  - browser checks use installed Microsoft Edge in headless mode, with a software WebGL renderer; they cover actual uploads, inspection, retaining paths, flight controls, refresh/reopen, malformed input, and same-origin API enforcement. Viewer checks default to port 5077 unless `MEMORYFLIGHT_BASE_URL` is set; always point them at a disposable server, not a viewer holding useful uploads. Spatial checks use their own ephemeral server and also verify real Ctrl-click root/slot targeting through a pinned array, exact single-connection highlighting, folding, themes, and all three generated fixture graphs.
+  - browser checks use installed Microsoft Edge in headless mode, with a software WebGL renderer; they cover actual uploads, inspection, retaining paths, flight controls, refresh/reopen, malformed input, and same-origin API enforcement. Viewer checks default to port 5077 unless `HEAPSCAPE_BASE_URL` is set; always point them at a disposable server, not a viewer holding useful uploads. Spatial checks use their own ephemeral server and also verify real Ctrl-click root/slot targeting through a pinned array, exact single-connection highlighting, folding, themes, and all three generated fixture graphs.
   - Node checks verify byte-to-volume ratios, exact 64-bit ordering, nonoverlapping packing, root/array-slot geography, short local routes, nonoccluding glass materials, bounded traversal, count-conserving bundles, themed type colors, real signal endpoints, animation pausing, and pitch-aware flight/crosshair controls.
   - individual-site checks verify shaded marker materials, container-bypassing raycasts, annotation semantics, unresolved targets, selected-region label priority, and screen-size bounds.
   - search/pan checks verify independent panel folding, selection of all matches beyond the 40-row preview, multi-source neighborhoods, automatic budget expansion, zero-match behavior, and right-drag camera movement without selection loss.

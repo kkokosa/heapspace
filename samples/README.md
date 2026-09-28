@@ -15,7 +15,7 @@ dotnet build .\Fixtures\ConsoleApp\ConsoleApp.csproj -c Release
 dotnet .\Fixtures\ConsoleApp\bin\Release\net10.0\ConsoleApp.dll
 ```
 
-Wait for `MEMORYFLIGHT_READY`. Leave this process running while collecting the dump; it waits intentionally so the synthetic roots remain alive.
+Wait for `HEAPSCAPE_READY`. Leave this process running while collecting the dump; it waits intentionally so the synthetic roots remain alive.
 
 ## Collect a local dump
 

@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace MemoryFlight;
+namespace Heapscape;
 
 // These are mapped ranges, not malloc blocks or evidence of native pointer ownership.
 public static class NativeMap

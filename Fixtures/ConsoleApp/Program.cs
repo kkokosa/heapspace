@@ -1,4 +1,4 @@
-using MemoryFlight.Fixtures;
+using Heapscape.Fixtures;
 
 FinalizerSamples.Prepare();
 using var graph = new FixtureGraph();
