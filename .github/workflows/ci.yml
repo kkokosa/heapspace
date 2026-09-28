@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Windows build and synthetic checks
+    runs-on: windows-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Set up .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: '10.0.x'
+      - name: Restore JavaScript dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Run Node tests
+        run: npm test
+      - name: Build frontend
+        run: npm run build
+      - name: Restore .NET checks and locked backend dependencies
+        run: dotnet restore tests\MemoryFlight.Checks.csproj --locked-mode
+      - name: Build backend
+        run: dotnet build Server\MemoryFlight.csproj -c Release --no-restore
+      - name: Run synthetic .NET checks
+        run: dotnet run --project tests\MemoryFlight.Checks.csproj -c Release --no-restore

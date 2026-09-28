@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>MemoryFlight depth regression</title><link rel="icon" href="data:,">
+<script type="importmap">{"imports":{"three":"/test-three/three.module.js","three/addons/":"/test-addons/"}}</script>
+</head>
+<body>
+<script type="module">
+import * as THREE from 'three';
+import { renderLayers, transparentSurface, applyArrayAlpha, addTubeCenters, applyTubeWidth } from '/test-client/rendering.js';
+import { LineSegments2 } from '/test-lines/LineSegments2.js';
+import { LineSegmentsGeometry } from '/test-lines/LineSegmentsGeometry.js';
+import { LineMaterial } from '/test-lines/LineMaterial.js';
+import { semanticDescriptor, applySemanticSurface } from '/test-client/semantic-materials.js';
+import { ReferenceBloomPass } from '/test-client/reference-bloom.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { applyRootStripes } from '/test-client/root-colors.js';
+import { referenceArrowGeometry, referenceArrows } from '/test-client/reference-arrows.js';
+import { orientPlanarLabel } from '/test-client/region-guides.js';
+
+const renderer = new THREE.WebGLRenderer({ antialias: false, preserveDrawingBuffer: true });
+renderer.setSize(256, 256);
+document.body.append(renderer.domElement);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#000000');
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+const curve = new THREE.LineCurve3(new THREE.Vector3(-2, 0, 0), new THREE.Vector3(2, 0, 0));
+const pipe = new THREE.Mesh(new THREE.TubeGeometry(curve, 8, 0.2, 8, false),
+  new THREE.MeshBasicMaterial({ ...transparentSurface, color: '#00ff00', opacity: 0.95 }));
+pipe.renderOrder = renderLayers.connections; scene.add(pipe);
+const glass = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 3),
+  new THREE.MeshBasicMaterial({ ...transparentSurface, color: '#203040', opacity: 0.4 }));
+glass.renderOrder = renderLayers.glass; scene.add(glass);
+const pixel = () => {
+  renderer.render(scene, camera);
+  const result = new Uint8Array(4), gl = renderer.getContext();
+  gl.readPixels(128, 128, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, result);
+  return [...result];
+};
+const angles = [];
+for (const position of [[0, 0, 8], [4, 3, 8], [-4, 2, 8], [0, 3, -8]]) {
+  camera.position.set(...position); camera.lookAt(0, 0, 0);
+  glass.visible = false; const baseline = pixel();
+  glass.visible = true; glass.material.depthWrite = true; const oldBug = pixel();
+  glass.material.depthWrite = false; const fixed = pixel();
+  angles.push({ position, baseline, oldBug, fixed });
+}
+scene.remove(glass);
+const geometry = new THREE.BoxGeometry(3, 3, 3);
+const alpha = new THREE.InstancedBufferAttribute(new Float32Array([1]), 1);
+geometry.setAttribute('arrayAlpha', alpha);
+const array = new THREE.InstancedMesh(geometry,
+  applyArrayAlpha(new THREE.MeshBasicMaterial({ ...transparentSurface, color: '#203040' })), 1);
+array.setMatrixAt(0, new THREE.Matrix4()); array.renderOrder = renderLayers.glass;
+const depth = new THREE.InstancedMesh(geometry,
+  applyArrayAlpha(new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: true, alphaTest: 1 })), 1);
+depth.instanceMatrix = array.instanceMatrix;
+scene.add(array, depth);
+const arrayAngles = [];
+for (const { position } of angles) {
+  camera.position.set(...position); camera.lookAt(0, 0, 0);
+  alpha.array[0] = 1; alpha.needsUpdate = true;
+  const farArray = pixel();
+  alpha.array[0] = 0.18; alpha.needsUpdate = true;
+  const nearArray = pixel();
+  alpha.array[0] = 1; alpha.needsUpdate = true;
+  const farAgain = pixel();
+  arrayAngles.push({ position, farArray, nearArray, farAgain });
+}
+scene.remove(array, depth, pipe);
+camera.position.set(0, 0, 8); camera.lookAt(0, 0, 0);
+const greenPixels = () => {
+  renderer.render(scene, camera);
+  const result = new Uint8Array(256 * 4), gl = renderer.getContext();
+  gl.readPixels(128, 0, 1, 256, gl.RGBA, gl.UNSIGNED_BYTE, result);
+  let count = 0;
+  for (let i = 0; i < result.length; i += 4) if (result[i + 1] > 150 && result[i] < 80) count++;
+  return count;
+};
+const width = { value: 1 };
+const scaledTube = new THREE.Mesh(addTubeCenters(new THREE.TubeGeometry(curve, 8, 0.03, 8), curve, 8),
+  applyTubeWidth(new THREE.MeshBasicMaterial({ ...transparentSurface, color: '#00ff00' }), width));
+scene.add(scaledTube);
+const thinTube = greenPixels(); width.value = 3; const thickTube = greenPixels();
+scene.remove(scaledTube);
+const wideLine = new LineSegments2(new LineSegmentsGeometry().setPositions(new Float32Array([-2, 0, 0, 2, 0, 0])),
+  new LineMaterial({ ...transparentSurface, color: '#00ff00', linewidth: 1 }));
+scene.add(wideLine);
+const thinLine = greenPixels(); wideLine.material.linewidth = 6; const thickLine = greenPixels();
+scene.clear();
+const arrow = new THREE.Mesh(referenceArrowGeometry(),
+  applyTubeWidth(new THREE.MeshBasicMaterial({ ...transparentSurface, color: '#00ff00' }), width));
+arrow.scale.set(0.12, 0.3, 0.12); arrow.rotation.z = -Math.PI / 2;
+scene.add(arrow);
+width.value = 1; const thinArrow = greenPixels();
+width.value = 3; const thickArrow = greenPixels();
+const arrowRegion = { id: 'r', position: [0, 0, 0], size: [20, 20, 20] };
+const arrowSource = { id: 'array', position: [-2, 0, 0], anchor: [-2, 0, 0], side: 4, region: arrowRegion };
+const arrowTarget = { id: 'target', position: [2, 0, 0], side: 1, region: arrowRegion };
+const ordinaryHead = referenceArrows({ source: arrowSource, target: arrowTarget, kind: 'reference' }, 'direct')[0];
+const internalHead = referenceArrows({ source: { ...arrowSource, slotCellSize: 0.4 }, target: arrowTarget, kind: 'reference' }, 'direct')[0];
+width.value = 1.5;
+arrow.scale.set(ordinaryHead.length * 0.34, ordinaryHead.length, ordinaryHead.length * 0.34);
+const ordinaryArrow = greenPixels();
+arrow.scale.set(internalHead.length * 0.28, internalHead.length, internalHead.length * 0.28);
+const internalArrow = greenPixels();
+scene.remove(arrow); arrow.geometry.dispose(); arrow.material.dispose();
+scene.add(new THREE.AmbientLight('#ffffff', 1));
+const light = new THREE.DirectionalLight('#ffffff', 1); light.position.set(4, 6, 8); scene.add(light);
+const semanticChecksum = (type, preview, previewsIncluded) => {
+  const geometry = new THREE.BoxGeometry(1, 1, 1);
+  const material = applySemanticSurface(new THREE.MeshStandardMaterial({ color: '#9367dd' }), geometry,
+    [semanticDescriptor({ type, size: 64, preview }, { previewsIncluded, referenceCount: 3 })]);
+  const box = new THREE.InstancedMesh(geometry, material, 1);
+  box.setMatrixAt(0, new THREE.Matrix4().makeScale(3, 3, 3)); scene.add(box);
+  renderer.render(scene, camera);
+  const pixels = new Uint8Array(256 * 256 * 4), gl = renderer.getContext();
+  gl.readPixels(0, 0, 256, 256, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+  let checksum = 2166136261;
+  for (const value of pixels) checksum = Math.imul(checksum ^ value, 16777619) >>> 0;
+  scene.remove(box); geometry.dispose(); material.dispose();
+  return checksum;
+};
+const surfaces = {
+  hiddenA: semanticChecksum('System.String', 'value-A', false),
+  hiddenB: semanticChecksum('System.String', 'value-B', false),
+  stringA: semanticChecksum('System.String', 'value-A', true),
+  stringB: semanticChecksum('System.String', 'value-B', true),
+  array: semanticChecksum('System.Object[]', 'array length: 5', true),
+};
+scene.clear();
+const bloomCamera = new THREE.OrthographicCamera(-4, 4, 4, -4, 0.1, 100);
+bloomCamera.position.set(0, 0, 10); bloomCamera.lookAt(0, 0, 0);
+renderer.toneMapping = THREE.ReinhardToneMapping;
+const emitter = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.5, 1.5),
+  new THREE.MeshBasicMaterial({ color: new THREE.Color(6, 0.1, 4) }));
+scene.add(emitter);
+const composer = new EffectComposer(renderer);
+composer.setSize(256, 256);
+composer.addPass(new RenderPass(scene, bloomCamera));
+composer.addPass(new ReferenceBloomPass(scene, bloomCamera, { strength: 1, radius: 0.35, threshold: 0.5 }));
+composer.addPass(new OutputPass());
+const haloPixel = () => {
+  composer.render(0);
+  const result = new Uint8Array(4), gl = renderer.getContext();
+  gl.readPixels(160, 128, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, result);
+  return [...result];
+};
+const objectHalo = haloPixel();
+emitter.userData.referenceGlow = true;
+const referenceHalo = haloPixel();
+const blocker = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 0.2), new THREE.MeshBasicMaterial({ color: '#000000' }));
+blocker.position.z = 2; scene.add(blocker);
+const blockedHalo = haloPixel();
+blocker.material.transparent = true; blocker.material.depthWrite = false; blocker.material.opacity = 0.3;
+const glassHalo = haloPixel();
+scene.clear(); renderer.toneMapping = THREE.NoToneMapping;
+scene.add(new THREE.AmbientLight('#ffffff', 1));
+const rootStripeColors = (mask, textured = false) => {
+  const geometry = new THREE.BoxGeometry(1, 1, 1);
+  const material = textured ? new THREE.MeshStandardMaterial() : new THREE.MeshBasicMaterial();
+  if (textured) applySemanticSurface(material, geometry, [semanticDescriptor({ type: 'System.Object[]', size: 128 })]);
+  applyRootStripes(material, geometry, [mask]);
+  const box = new THREE.InstancedMesh(geometry, material, 1);
+  box.setMatrixAt(0, new THREE.Matrix4().makeScale(3, 3, 3)); scene.add(box);
+  renderer.render(scene, bloomCamera);
+  const pixels = new Uint8Array(64 * 4), gl = renderer.getContext();
+  gl.readPixels(96, 128, 64, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+  const colors = new Set();
+  for (let i = 0; i < pixels.length; i += 4) colors.add(`${pixels[i]},${pixels[i + 1]},${pixels[i + 2]}`);
+  scene.remove(box); geometry.dispose(); material.dispose();
+  return [...colors];
+};
+window.renderingProof = { angles, arrayAngles, widths: { thinTube, thickTube, thinLine, thickLine }, surfaces,
+  arrows: { thin: thinArrow, thick: thickArrow, ordinary: ordinaryArrow, internal: internalArrow },
+  bloom: { objectHalo, referenceHalo, blockedHalo, glassHalo },
+  rootStripes: { single: rootStripeColors(1), multiple: rootStripeColors(3), textured: rootStripeColors(3, true),
+    texturedFirst: rootStripeColors(1, true), texturedSecond: rootStripeColors(2, true) } };
+scene.clear();
+const glyphTexture = new THREE.DataTexture(new Uint8Array([
+  255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255, 255, 0, 255,
+]), 2, 2);
+glyphTexture.needsUpdate = true;
+const glyph = new THREE.Mesh(new THREE.PlaneGeometry(4, 2),
+  new THREE.MeshBasicMaterial({ map: glyphTexture, side: THREE.DoubleSide }));
+glyph.userData.label = { angle: 0 };
+scene.add(glyph);
+const labelCamera = new THREE.OrthographicCamera(-3, 3, 3, -3, 0.1, 100);
+window.renderingProof.labelSides = [];
+for (const position of [[0, 6, 6], [0, -6, 6], [0, 6, -6], [0, -6, -6]]) {
+  labelCamera.position.set(...position); labelCamera.lookAt(0, 0, 0); labelCamera.updateMatrixWorld();
+  orientPlanarLabel(glyph, labelCamera); renderer.render(scene, labelCamera);
+  const samples = [], gl = renderer.getContext();
+  for (const [x, y] of [[100, 116], [156, 116], [100, 140], [156, 140]]) {
+    const sample = new Uint8Array(4); gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, sample);
+    samples.push([...sample]);
+  }
+  window.renderingProof.labelSides.push(samples);
+}
+glyph.geometry.dispose(); glyph.material.dispose(); glyphTexture.dispose();
+for (const pass of composer.passes) pass.dispose();
+composer.dispose();
+renderer.dispose();
+</script>
+</body>
+</html>

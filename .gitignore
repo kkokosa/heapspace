@@ -1,0 +1,66 @@
+# Dependencies and build output
+**/bin/
+**/obj/
+node_modules/
+Server/wwwroot/
+
+# Local captures, test output, and caches
+artifacts/
+test-results/
+playwright-report/
+blob-report/
+dumps/
+snapshots/
+screenshots/
+logs/
+.cache/
+.vite/
+coverage/
+*.dmp
+*.dump
+*.core
+*.heapdump
+*.nettrace
+*.etl
+*.log
+*.ready
+*.zip
+*.7z
+*.tar
+*.gz
+
+# Exported graphs may contain process memory. Allow only source manifests/locks.
+*.json
+*.jsonl
+*.ndjson
+!package.json
+!package-lock.json
+!packages.lock.json
+!/global.json
+
+# Generated Orchard state and databases
+**/App_Data/
+Fixtures/OrchardApp/Localization/
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+
+# Machine-specific settings, credentials, and unrelated personal data
+.env
+.env.*
+.npmrc
+.nuget/
+*.pfx
+*.p12
+*.pem
+*.key
+.vs/
+.idea/
+.vscode/
+.obsidian/
+Notes/
+Thumbs.db
+.DS_Store

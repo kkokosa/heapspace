@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en" data-theme="prism">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Heapscape - .NET memory atlas</title>
+  <link rel="icon" href="data:,">
+</head>
+<body>
+  <div id="viewport" aria-label="Interactive 3D memory atlas"></div>
+  <header>
+    <div class="brand"><span class="mark">H</span><div>Heapscape<small>.NET MEMORY ATLAS / ClrMD + Three.js</small></div></div>
+    <div class="toolbar"><span class="local">LOCAL ONLY</span><button id="home">Overview</button><button id="deselect" title="Clear selection without leaving flight (X)">Clear selection [X]</button><button id="fly">Enter flight [F]</button></div>
+  </header>
+  <div id="left-rail">
+  <section id="gc-analysis" class="panel" aria-label="GC reachability">
+    <label>Color by<select id="color"><option value="type" selected>Object type</option><option value="reachability">Reachability type (root types)</option><option value="generation">Generation / heap</option><option value="size">Object size</option></select></label>
+    <label class="check"><input id="unreachable" type="checkbox"> Highlight objects</label>
+    <div id="highlight-options" hidden>
+      <label>Collection scope<select id="gc-generation" disabled><option value="0">Gen 0</option><option value="1">Gen 1</option><option value="2">Gen 2 / full</option></select></label>
+      <select id="highlight-state" aria-label="Reachability to highlight" disabled><option value="unreachable">Unreachable</option><option value="reachable">Reachable</option><option value="unknown">Unknown</option></select>
+    </div>
+  </section>
+  <aside id="controls" class="panel">
+    <details id="explore" open>
+    <summary id="explore-toggle"><h1>Explore the heap.</h1></summary>
+    <div id="explore-body">
+    <button id="open-dump">Open a memory dump</button>
+    <label>Visual theme<select id="theme"><option value="atlas">Atlas</option><option value="matrix">Matrix</option><option value="neon">Neon Circuit</option><option value="prism" selected>Prism</option></select></label>
+    <label>Visible object budget<select id="budget"><option value="5000">5,000</option><option value="15000" selected>15,000</option><option value="40000">40,000</option><option value="all">All captured (100%)</option></select></label>
+    <label>Reference budget<select id="reference-budget"><option value="6000" selected>6,000 object / 4,000 root links</option><option value="all">All eligible (100%)</option></select></label>
+    <label class="check"><input id="reserved" type="checkbox"> Include reserved address space (can be huge)</label>
+    </div>
+    </details>
+  </aside>
+  <section id="find-panel" class="panel" aria-label="Find objects">
+    <details id="find-objects">
+      <summary id="find-toggle">Find object(s)</summary>
+      <div id="find-body">
+        <label>Type, address, or preview<input id="search" type="search" placeholder="Search captured objects..." autocomplete="off"></label>
+        <p id="search-status" class="muted" role="status">Open a dump to find objects.</p>
+        <button id="select-matches" disabled>Select all results</button>
+        <div id="results"></div>
+      </div>
+    </details>
+  </section>
+  </div>
+  <div id="right-rail">
+  <aside id="inspector" class="panel" aria-label="Object inspector">
+    <div id="details"><p class="muted">Click an object, stack box, root marker, or native mapping.</p><p>Ctrl-click or R+click selects a root or array slot. F toggles flight; G focuses; Space toggles slow flight; hold Shift for fast flight; X clears selection.</p></div>
+    <details id="analysis-notes"><summary>Analysis notes</summary>
+      <p id="reachability-capture" hidden></p>
+      <div id="reachability-options" hidden><p id="reachability-status">Open a dump to analyze reachability.</p></div>
+      <p id="card-status" hidden></p>
+      <p id="object-budget-status">Open a dump to see object coverage.</p>
+      <p id="reference-status">Open a dump to see object reference coverage.</p>
+      <p id="root-status">Root-link coverage is counted separately from object references.</p>
+      <p id="neighborhood-status">Select an object to explore its reference neighborhood.</p>
+      <p id="gap-status">Region layouts preserve gaps between object addresses.</p>
+      <p id="physical-layout-status"></p>
+      <p id="full-display-warning" hidden>Full views can be expensive. Display budgets never truncate the analysis graph.</p>
+      <div id="warnings">Memory dumps may contain passwords, tokens, and personal data. Analyze only trusted dumps locally.</div>
+    </details>
+  </aside>
+  <section id="legend-panel" class="panel" aria-label="Legends">
+    <details id="legends">
+      <summary id="legend-toggle">Legends</summary>
+      <div id="legend-body">
+        <section id="material-legend-section"><h2>Memory materials</h2><div id="material-legend"></div></section>
+      </div>
+    </details>
+  </section>
+  </div>
+  <dialog id="dump-dialog" class="panel" aria-labelledby="dump-dialog-title">
+    <div class="dialog-heading"><h2 id="dump-dialog-title">Memory dumps</h2><button id="close-dump" aria-label="Close memory dump dialog">Close</button></div>
+    <label class="check" title="String previews may contain sensitive data"><input id="previews" type="checkbox"> Include strings</label>
+    <label class="upload" for="dump"><strong>Choose a dump file</strong><span>.dmp / .core / ELF - up to 2 GiB</span></label>
+    <input id="dump" type="file" accept=".dmp,.dump,.core,application/octet-stream">
+    <p id="status" role="status">Ready.</p>
+    <progress id="progress" hidden max="100"></progress>
+    <button id="clear" disabled>Cancel operation</button>
+    <h2>Processed dumps</h2><div id="saved"></div>
+  </dialog>
+  <div id="app-error" role="alert" hidden></div>
+  <div id="welcome"><span class="eyebrow">FROM BYTES TO LANDSCAPE</span><h2>Your process,<br>from the inside.</h2><p>SOH / LOH / POH / stacks / roots / native ranges</p></div>
+  <div id="tooltip" hidden></div>
+  <div id="crosshair" hidden>+</div>
+  <div id="flight-hint" data-speed="normal" hidden>Normal flight | Space toggle slow | Hold Shift fast | R+click root or slot | G focus | X clears | F flight</div>
+  <footer><span id="counts">No dump loaded</span><span id="navigation">WASD pan &nbsp; Q/E rotate &nbsp; G focus &nbsp; F flight</span></footer>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
